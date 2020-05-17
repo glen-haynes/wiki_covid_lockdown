@@ -1,0 +1,64 @@
+---
+title: "Scrape Wikipedia_COVID-19_pandemic_lockdowns"
+output: html_document
+author: Glen Haynes
+params:
+  use_html_from_file: FALSE
+---
+
+```{r}
+use_html_from_file <- params$use_html_from_file
+```
+
+```{r}
+library(dplyr)
+library(reticulate)
+library(purrr)
+```
+
+## Pull Lockdown Tables from Wikipedia ##
+#  HTML file can be specified in the 'source' parameter as a web URL or called from a local directory  #
+# rtrn_tbl can be specified as one of, 'locked', 'not_locked', or 'both'. #
+# Code was adapted from https://simpleanalytical.com/how-to-web-scrape-wikipedia-python-urllib-beautiful-soup-pandas #
+
+
+```{python}
+from wiki_covid_lockdown import wiki_covid_lockdown
+import os
+cwd = os.getcwd()
+
+## Invoke markdown parameter to conditionlly use HTML from local file or from
+## the live Wikipedia website ##
+
+if r.use_html_from_file:
+  loc = cwd + "/COVID-19 pandemic lockdowns - Wikipedia.html"
+  use_source = loc
+else:
+  use_source = "https://en.wikipedia.org/wiki/COVID-19_pandemic_lockdowns"
+
+
+## Following function adapted from 'https://simpleanalytical.com/how-to-web-scrape-wikipedia-python-urllib-beautiful-soup-pandas' ##
+
+df = wiki_covid_lockdown(source = use_source,
+                        rtrn_tbl = 'both',
+                        search_tbl_class = 'default')
+
+df_lock = df[0]
+
+df_no_lock = df[1]
+
+```
+
+```{r, warning = FALSE}
+
+df_lock <- py$df_lock %>% 
+  map(~sapply(.x, function(y){
+      as.character(y)
+    })) %>% bind_cols()
+
+df_no_lock <- py$df_no_lock %>% 
+  map(~sapply(.x, function(y){
+      as.character(y)
+    })) %>% bind_cols()
+
+```
