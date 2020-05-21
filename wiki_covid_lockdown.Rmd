@@ -21,44 +21,19 @@ library(purrr)
 # rtrn_tbl can be specified as one of, 'locked', 'not_locked', or 'both'. #
 # Code was adapted from https://simpleanalytical.com/how-to-web-scrape-wikipedia-python-urllib-beautiful-soup-pandas #
 
+```{r,  warning=FALSE}
+use_python("c/Miniconda3/python")
+wiki_covid_lockdown <- import("wiki_covid_lockdown")
 
-```{python}
-from wiki_covid_lockdown import wiki_covid_lockdown
-import os
-cwd = os.getcwd()
+wiki_lock_status <- wiki_covid_lockdown$wiki_covid_lockdown()
 
-## Invoke markdown parameter to conditionlly use HTML from local file or from
-## the live Wikipedia website ##
-
-if r.use_html_from_file:
-  loc = cwd + "/COVID-19 pandemic lockdowns - Wikipedia.html"
-  use_source = loc
-else:
-  use_source = "https://en.wikipedia.org/wiki/COVID-19_pandemic_lockdowns"
-
-
-## Following function adapted from 'https://simpleanalytical.com/how-to-web-scrape-wikipedia-python-urllib-beautiful-soup-pandas' ##
-
-df = wiki_covid_lockdown(source = use_source,
-                        rtrn_tbl = 'both',
-                        search_tbl_class = 'default')
-
-df_lock = df[0]
-
-df_no_lock = df[1]
-
-```
-
-```{r, warning = FALSE}
-
-df_lock <- py$df_lock %>% 
+wiki_lock <- wiki_lock_status[[1]] %>%
   map(~sapply(.x, function(y){
-      as.character(y)
+      as.character(y) %>% gsub("^\\s+|\\s+$", "", .)
     })) %>% bind_cols()
 
-df_no_lock <- py$df_no_lock %>% 
+wiki_no_lock <- wiki_lock_status[[2]] %>%
   map(~sapply(.x, function(y){
-      as.character(y)
+      as.character(y) %>% gsub("^\\s+|\\s+$", "", .)
     })) %>% bind_cols()
-
 ```
